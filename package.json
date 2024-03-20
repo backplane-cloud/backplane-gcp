@@ -1,11 +1,15 @@
 {
-  "name": "backplane-gcp",
+  "name": "@backplane-software/backplane-gcp",
   "version": "0.1.0",
   "description": "Backplane GCP Module",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "lewis@backplane.cloud",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "express-async-handler": "^1.2.0"
+  }
 }
