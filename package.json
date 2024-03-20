@@ -13,5 +13,18 @@
     "@google-cloud/org-policy": "^3.2.0",
     "@google-cloud/resource-manager": "^5.1.0",
     "express-async-handler": "^1.2.0"
-  }
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/backplane-cloud/backplane-gcp.git"
+  },
+  "keywords": [
+    "backplane",
+    "gcp"
+  ],
+  "bugs": {
+    "url": "https://github.com/backplane-cloud/backplane-gcp/issues"
+  },
+  "homepage": "https://github.com/backplane-cloud/backplane-gcp#readme"
 }
