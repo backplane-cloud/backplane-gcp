@@ -4,9 +4,9 @@ import asyncHandler from "express-async-handler";
 import { ProjectsClient, FoldersClient } from "@google-cloud/resource-manager";
 import { OrgPolicyClient } from "@google-cloud/org-policy";
 
-import { CloudBillingClient } from "@google-cloud/billing";
-import { BigQuery } from "@google-cloud/bigquery";
-import { PoliciesClient } from "@google-cloud/iam";
+// import { CloudBillingClient } from "@google-cloud/billing";
+// import { BigQuery } from "@google-cloud/bigquery";
+// import { PoliciesClient } from "@google-cloud/iam";
 
 // GCP CODE
 const createGCPEnvironments = asyncHandler(async (req, res) => {
