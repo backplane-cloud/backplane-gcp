@@ -218,24 +218,30 @@ async function createProject(client_email, private_key, parent, projectId) {
 const createGCPEnvironments = asyncHandler(async (req, res) => {
   const { environs, parent, orgCode, appCode, client_email, private_key } = req;
 
-  let environments = [];
+  try {
+    let environments = [];
 
-  environs.map(async (env) => {
-    let projectId = `bp-${orgCode.split("-")[0]}-${
-      appCode.split("-")[0]
-    }-${env}`;
-    const response = await createProject(
-      client_email,
-      private_key,
-      parent,
-      projectId
+    await Promise.all(
+      environs.map(async (env) => {
+        let projectId = `bp-${orgCode.split("-")[0]}-${
+          appCode.split("-")[0]
+        }-${env}`;
+        const response = await createProject(
+          client_email,
+          private_key,
+          parent,
+          projectId
+        );
+        // console.log(`project created: ${response.project.name}`);
+        environments.push(projectId);
+      })
     );
-    // console.log(`project created: ${response.project.name}`);
-    environments.push(projectId);
-  });
-  // console.log("environments", environments);
-
-  // res.json(environments);
+    console.log("environments", environments);
+    res.status(200).json(environments);
+  } catch (error) {
+    console.error("Error creating GCP environments:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
 });
 
 const getGCPAccess = asyncHandler(async (req, res) => {
