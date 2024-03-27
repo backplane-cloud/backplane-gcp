@@ -171,12 +171,12 @@ async function createProject(client_email, private_key, parent, projectId) {
       client_email,
       private_key,
     });
-    console.log("client_email", client_email);
-    console.log("private_key", private_key);
+    // console.log("client_email", client_email);
+    // console.log("private_key", private_key);
 
     // Obtain an access token
     const accessToken = await jwtClient.getAccessToken();
-    console.log(accessToken);
+    // console.log(accessToken);
 
     // Create the project request body
     const requestBody = {
@@ -187,8 +187,8 @@ async function createProject(client_email, private_key, parent, projectId) {
         id: `${parent.split("/")[1]}`, // Replace with your organization ID or folder ID
       },
     };
-    console.log(requestBody);
-    console.log(accessToken.token);
+    // console.log(requestBody);
+    // console.log(accessToken.token);
 
     // Make a request to create the project using the access token
     const response = await fetch(
@@ -213,7 +213,6 @@ async function createProject(client_email, private_key, parent, projectId) {
   } catch (err) {
     console.error("Error creating project:", err);
   }
-  return;
 }
 
 const createGCPEnvironments = asyncHandler(async (req, res) => {
@@ -231,12 +230,12 @@ const createGCPEnvironments = asyncHandler(async (req, res) => {
       parent,
       projectId
     );
-    console.log(`project created: ${response.project.name}`);
+    // console.log(`project created: ${response.project.name}`);
     environments.push(projectId);
   });
-  console.log("environments", environments);
+  // console.log("environments", environments);
 
-  res.status(200).json(environments);
+  // res.json(environments);
 });
 
 const getGCPAccess = asyncHandler(async (req, res) => {
