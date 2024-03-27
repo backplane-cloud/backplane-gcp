@@ -3,47 +3,244 @@ import asyncHandler from "express-async-handler";
 // GCP SDK API
 import { ProjectsClient, FoldersClient } from "@google-cloud/resource-manager";
 import { OrgPolicyClient } from "@google-cloud/org-policy";
+import { GoogleAuth } from "google-auth-library";
+import fetch from "node-fetch";
 
 // import { CloudBillingClient } from "@google-cloud/billing";
 // import { BigQuery } from "@google-cloud/bigquery";
 // import { PoliciesClient } from "@google-cloud/iam";
 
 // GCP CODE
-const createGCPEnvironments = asyncHandler(async (req, res) => {
-  const { environs, parent, orgCode, appCode } = req;
+// const createGCPEnvironments = asyncHandler((req, res) => {
+//   const { environs, parent, orgCode, appCode, cloudCredentials } = req;
 
-  // const projectId = displayName.toLowerCase();
-  // // const project = projectId;
-  // console.log(`Creating GCP App ${projectId}`);
+//   // const projectId = displayName.toLowerCase();
+//   // // const project = projectId;
+//   // console.log(`Creating GCP App ${projectId}`);
 
-  const client = new ProjectsClient();
+//   const client = new ProjectsClient();
 
-  let project;
+//   let project;
+//   let environments = [];
+//   environs.map(async (env) => {
+//     let projectId = `bp-${orgCode.split("-")[0]}-${appCode.split("-")[0]}`;
+//     project = {
+//       projectId,
+//       displayName: `bp-${orgCode.split("-")[0]}-${
+//         appCode.split("-")[0]
+//       }-${env}`,
+//       parent,
+//     };
 
-  environs.map((env) => {
-    let projectId = `bp-${orgCode.split("-")[0]}-${appCode.split("-")[0]}`;
-    project = {
+//     const request = {
+//       project,
+//     };
+
+//     console.log("Project Object:", project);
+//     console.log("POST Request Body:", request);
+
+//     // Run request
+//     const [operation] = await client.createProject(request);
+//     const [response] = await operation.promise();
+//     console.log(response);
+//     // return response;
+//     environments.push(response);
+//   });
+
+//   return environments;
+//   //
+// });
+
+// const createGCPEnvironments = asyncHandler(async (req, res) => {
+//   const { environs, parent, orgCode, appCode, cloudCredentials } = req;
+//   const creds = JSON.parse(cloudCredentials);
+
+//   // Create a new JWT client
+//   const client = new JWT({
+//     email: creds.gcpsecret.client_email,
+//     key: creds.gcpsecret.private_key,
+//     scopes: ["https://www.googleapis.com/auth/cloud-platform"],
+//   });
+
+//   // Obtain an access token
+//   const accessToken = await client.getAccessToken();
+
+//   // Create Project Environments
+//   let environments = [];
+
+//   environs.map(async (env) => {
+//     // Create a new ProjectsClient with authentication
+//     let projectId = `bp-${orgCode.split("-")[0]}-${appCode.split("-")[0]}`;
+//     const projectsClient = new ProjectsClient({
+//       projectId,
+//       credentials: {
+//         access_token: accessToken,
+//       },
+//     });
+
+//     // Define the project creation request
+
+//     let p = {
+//       project: {
+//         name: `bp-${orgCode.split("-")[0]}-${appCode.split("-")[0]}-${env}`,
+//         projectId,
+//         parent: {
+//           id: `${parent.split("/")[1]}`,
+//         },
+//       },
+//     };
+
+//     console.log(p);
+//     const [response] = await projectsClient.createProject(p);
+//     console.log("iam here");
+//     console.log("RESPONSE", response);
+//     return;
+
+//     // const [response] = await projectClient.create({
+//     //   project: {
+//     //     name: `bp-${orgCode.split("-")[0]}-${appCode.split("-")[0]}-${env}`,
+//     //     projectId,
+//     //     parent: {
+//     //       type: "folder",
+//     //       id: parent,
+//     //     },
+//     //   },
+//     // });
+
+//     console.log(`project created: ${response.project.name}`);
+
+//     // return response;
+//     environments.push(response);
+//   });
+
+//   return environments;
+// });
+
+async function listProjects(credentials) {
+  const creds = JSON.parse(credentials);
+  try {
+    // Create a new GoogleAuth instance
+    const auth = new GoogleAuth({
+      scopes: "https://www.googleapis.com/auth/cloud-platform",
+    });
+
+    // Create a JWT client with the provided credentials
+    const jwtClient = await auth.fromJSON({
+      client_email: creds.gcpsecret.client_email,
+      private_key: creds.gcpsecret.private_key,
+    });
+
+    // Obtain an access token
+    const accessToken = await jwtClient.getAccessToken();
+
+    // Make a request to list projects using the access token
+    const response = await fetch(
+      "https://cloudresourcemanager.googleapis.com/v1/projects",
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken.token}`,
+        },
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch projects: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+
+    // Log the list of projects
+    console.log("Projects:");
+    data.projects.forEach((project) => {
+      console.log(project.name);
+    });
+  } catch (err) {
+    console.error("Error listing projects:", err);
+  }
+}
+
+async function createProject(client_email, private_key, parent, projectId) {
+  try {
+    // Create a new GoogleAuth instance
+    const auth = new GoogleAuth({
+      scopes: "https://www.googleapis.com/auth/cloud-platform",
+    });
+
+    // Create a JWT client with the provided credentials
+    const jwtClient = await auth.fromJSON({
+      client_email,
+      private_key,
+    });
+    console.log("client_email", client_email);
+    console.log("private_key", private_key);
+
+    // Obtain an access token
+    const accessToken = await jwtClient.getAccessToken();
+    console.log(accessToken);
+
+    // Create the project request body
+    const requestBody = {
       projectId,
-      displayName: `bp-${orgCode.split("-")[0]}-${
-        appCode.split("-")[0]
-      }-${env}`,
-      parent, //: "organizations/447090138215",
+      name: projectId,
+      parent: {
+        type: "organization", // Change this to 'folder' or 'organization' depending on your needs
+        id: `${parent.split("/")[1]}`, // Replace with your organization ID or folder ID
+      },
     };
+    console.log(requestBody);
+    console.log(accessToken.token);
+
+    // Make a request to create the project using the access token
+    const response = await fetch(
+      "https://cloudresourcemanager.googleapis.com/v1/projects",
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${accessToken.token}`, // Accessing the token property
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestBody),
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`Failed to create project: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+
+    console.log("Project created successfully:", data);
+  } catch (err) {
+    console.error("Error creating project:", err);
+  }
+  return;
+}
+
+const createGCPEnvironments = asyncHandler(async (req, res) => {
+  const { environs, parent, orgCode, appCode, cloudCredentials } = req;
+  const creds = JSON.parse(cloudCredentials);
+
+  const client_email = creds.gcpsecret.client_email;
+  const private_key = creds.gcpsecret.private_key;
+
+  let environments = [];
+
+  environs.map(async (env) => {
+    let projectId = `bp-${orgCode.split("-")[0]}-${
+      appCode.split("-")[0]
+    }-${env}`;
+    const response = await createProject(
+      client_email,
+      private_key,
+      parent,
+      projectId
+    );
+    console.log(`project created: ${response.project.name}`);
+    environments.push(projectId);
   });
+  console.log("environments", environments);
 
-  const request = {
-    project,
-  };
-
-  console.log("Project Object:", project);
-  console.log("POST Request Body:", request);
-
-  // Run request
-  const [operation] = await client.createProject(request);
-  const [response] = await operation.promise();
-  console.log(response);
-  return response;
-  //
+  res.status(200).json(environments);
 });
 
 const getGCPAccess = asyncHandler(async (req, res) => {
