@@ -217,11 +217,7 @@ async function createProject(client_email, private_key, parent, projectId) {
 }
 
 const createGCPEnvironments = asyncHandler(async (req, res) => {
-  const { environs, parent, orgCode, appCode, cloudCredentials } = req;
-  const creds = JSON.parse(cloudCredentials);
-
-  const client_email = creds.gcpsecret.client_email;
-  const private_key = creds.gcpsecret.private_key;
+  const { environs, parent, orgCode, appCode, client_email, private_key } = req;
 
   let environments = [];
 
