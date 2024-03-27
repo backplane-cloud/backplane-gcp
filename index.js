@@ -215,8 +215,16 @@ async function createProject(client_email, private_key, parent, projectId) {
   }
 }
 
-const createGCPEnvironments = asyncHandler(async (req, res) => {
-  const { environs, parent, orgCode, appCode, client_email, private_key } = req;
+// const createGCPEnvironments = asyncHandler(async (req, res) => {
+async function createGCPEnvironments({
+  environs,
+  parent,
+  orgCode,
+  appCode,
+  client_email,
+  private_key,
+}) {
+  // const { environs, parent, orgCode, appCode, client_email, private_key } = req;
 
   try {
     let environments = [];
@@ -236,13 +244,14 @@ const createGCPEnvironments = asyncHandler(async (req, res) => {
         environments.push(projectId);
       })
     );
-    console.log("environments", environments);
-    res.status(200).json(environments);
+    // console.log("environments", environments);
+    return environments;
+    // res.status(200).json(environments);
   } catch (error) {
     console.error("Error creating GCP environments:", error);
-    res.status(500).json({ error: "Internal Server Error" });
+    // res.status(500).json({ error: "Internal Server Error" });
   }
-});
+}
 
 const getGCPAccess = asyncHandler(async (req, res) => {
   const resource = "projects/backplane-core"; // Need to use the App ID to retrieve the Project Name
