@@ -253,31 +253,60 @@ async function createGCPEnvironments({
   }
 }
 
-const getGCPAccess = asyncHandler(async (req, res) => {
-  const resource = "projects/backplane-core"; // Need to use the App ID to retrieve the Project Name
-  // Imports the Resourcemanager library
-  //const { FoldersClient } = require("@google-cloud/resource-manager").v3;
+async function getAccessAssignments(accessToken, projectId) {
+  const url = `https://cloudresourcemanager.googleapis.com/v1/projects/${projectId}:getIamPolicy`;
 
-  // Instantiates a client
-  const resourcemanagerClient = new ProjectsClient();
+  try {
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+    });
 
-  async function callGetIamPolicy() {
-    // Construct request
-    const request = {
-      resource,
-    };
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
 
-    // Run request
-    const response = await resourcemanagerClient.getIamPolicy(request);
-    return response;
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error fetching access assignments:", error);
+    return null;
   }
+}
 
-  const assignments = await callGetIamPolicy();
-  //console.log("Get GCP Access");
-  //res.send("Get GCP Access - Logic not yet implemented");
-  // console.log(assignments);
-  res.json(assignments[0].bindings);
-});
+async function getGCPAccess({ client_email, private_key, environments }) {
+  try {
+    // Create a new GoogleAuth instance
+    const auth = new GoogleAuth({
+      scopes: "https://www.googleapis.com/auth/cloud-platform",
+    });
+
+    // Create a JWT client with the provided credentials
+    const jwtClient = await auth.fromJSON({
+      client_email,
+      private_key,
+    });
+
+    // Obtain an access token
+    const accessToken = await jwtClient.getAccessToken();
+
+    let assignments = [];
+
+    await Promise.all(
+      environments.map(async (env) => {
+        const response = await getAccessAssignments(accessToken.token, env);
+        assignments.push(response);
+      })
+    );
+
+    return assignments;
+  } catch (error) {
+    console.error("Error Retrieving Access Assignments:", error);
+  }
+}
 
 const getGCPCost = asyncHandler(async (req, res) => {
   console.log("Get GCP Cost");
