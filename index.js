@@ -308,31 +308,86 @@ async function getGCPAccess({ client_email, private_key, environments }) {
   }
 }
 
+async function getPolicyAssignments(accessToken, projectId) {
+  const url = `https://cloudresourcemanager.googleapis.com/v1/projects/${projectId}:listOrgPolicies`;
+
+  try {
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error fetching access assignments:", error);
+    return null;
+  }
+}
+
+async function getGCPPolicies({ client_email, private_key, environments }) {
+  try {
+    // Create a new GoogleAuth instance
+    const auth = new GoogleAuth({
+      scopes: "https://www.googleapis.com/auth/cloud-platform",
+    });
+
+    // Create a JWT client with the provided credentials
+    const jwtClient = await auth.fromJSON({
+      client_email,
+      private_key,
+    });
+
+    // Obtain an access token
+    const accessToken = await jwtClient.getAccessToken();
+
+    let policies = [];
+
+    await Promise.all(
+      environments.map(async (env) => {
+        const response = await getPolicyAssignments(accessToken.token, env);
+        policies.push(response);
+      })
+    );
+
+    return policies;
+  } catch (error) {
+    console.error("Error Retrieving Access Assignments:", error);
+  }
+}
+
 const getGCPCost = asyncHandler(async (req, res) => {
   console.log("Get GCP Cost");
   res.send("Get GCP Access - Logic not yet implemented");
 });
 
-const getGCPPolicy = asyncHandler(async (req, res) => {
-  // TODO(developer): replace with your prefered project ID.
-  const projectId = "backplane-core"; // Need to use the App ID to retrieve the Project Name
+// const getGCPPolicy = asyncHandler(async (req, res) => {
+//   // TODO(developer): replace with your prefered project ID.
+//   const projectId = "backplane-core"; // Need to use the App ID to retrieve the Project Name
 
-  // Creates a client
-  // eslint-disable-next-line no-unused-vars
-  const client = new OrgPolicyClient();
+//   // Creates a client
+//   // eslint-disable-next-line no-unused-vars
+//   const client = new OrgPolicyClient();
 
-  //TODO(library generator): write the actual function you will be testing
-  async function listConstraints() {
-    const constraints = await client.listConstraints({
-      parent: `projects/${projectId}`,
-    });
-    return constraints;
-  }
-  const policies = await listConstraints();
+//   //TODO(library generator): write the actual function you will be testing
+//   async function listConstraints() {
+//     const constraints = await client.listConstraints({
+//       parent: `projects/${projectId}`,
+//     });
+//     return constraints;
+//   }
+//   const policies = await listConstraints();
 
-  //console.log("Get GCP Policy");
-  //res.send("Get GCP Policy - Logic not yet implemented");
-  res.json(policies[0]);
-});
+//   //console.log("Get GCP Policy");
+//   //res.send("Get GCP Policy - Logic not yet implemented");
+//   res.json(policies[0]);
+// });
 
-export { getGCPAccess, getGCPCost, getGCPPolicy, createGCPEnvironments };
+export { getGCPAccess, getGCPCost, getGCPPolicies, createGCPEnvironments };
