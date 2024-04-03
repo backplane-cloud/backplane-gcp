@@ -241,7 +241,7 @@ async function createGCPEnvironments({
           projectId
         );
         // console.log(`project created: ${response.project.name}`);
-        environments.push(projectId);
+        environments.push({ name: env, accountId: projectId });
       })
     );
     // console.log("environments", environments);
