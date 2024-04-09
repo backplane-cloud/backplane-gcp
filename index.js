@@ -363,10 +363,11 @@ async function getGCPPolicies({ client_email, private_key, environments }) {
   }
 }
 
-const getGCPCost = asyncHandler(async (req, res) => {
+async function getGCPCost({ cloudCredentials, environments }) {
   console.log("Get GCP Cost");
-  res.send("Get GCP Access - Logic not yet implemented");
-});
+  const cost = ((Math.random() + 1) * 500).toFixed(2);
+  return cost; // Simulating App Cost for MVP
+}
 
 // const getGCPPolicy = asyncHandler(async (req, res) => {
 //   // TODO(developer): replace with your prefered project ID.
