@@ -1,6 +1,6 @@
 {
   "name": "@backplane-software/backplane-gcp",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "Backplane GCP Module",
   "main": "index.js",
   "type": "module",
