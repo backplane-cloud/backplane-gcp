@@ -364,7 +364,6 @@ async function getGCPPolicies({ client_email, private_key, environments }) {
 }
 
 async function getGCPCost({ cloudCredentials, environments }) {
-  console.log("Get GCP Cost");
   const cost = ((Math.random() + 1) * 500).toFixed(2);
   return cost; // Simulating App Cost for MVP
 }
