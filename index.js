@@ -254,7 +254,7 @@ async function createGCPEnvironments({
 }
 
 async function getAccessAssignments(accessToken, projectId) {
-  const url = `https://cloudresourcemanager.googleapis.com/v1/projects/${projectId}:getIamPolicy`;
+  const url = `https://cloudresourcemanager.googleapis.com/v1/projects/${projectId.accountId}:getIamPolicy`;
 
   try {
     const response = await fetch(url, {
@@ -294,6 +294,7 @@ async function getGCPAccess({ client_email, private_key, environments }) {
     const accessToken = await jwtClient.getAccessToken();
 
     let assignments = [];
+    console.log(environments);
 
     await Promise.all(
       environments.map(async (env) => {
